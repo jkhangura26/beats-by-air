@@ -62,4 +62,5 @@ Sampling interval is 2.5 ms, achieved using usleep() (can be improved with clock
 
 
 
+![IMG_3776](https://github.com/user-attachments/assets/8da6fce0-aa28-4d56-9fac-35ec879cbd3f)
 
