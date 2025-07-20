@@ -1,6 +1,6 @@
-BEATS BY AIR
+# BEATS BY AIR
 
-# Dual-Stick Air Drumming System (QNX RTOS)
+## Dual-Stick Air Drumming System (QNX RTOS)
 
 A real-time, multithreaded embedded C application that uses two MPU6050 motion sensors (via I2C) to detect drumming gestures and sends hit events to a remote host via UDP. Designed for QNX RTOS with low latency, deterministic execution, and responsive gesture classification.
 
