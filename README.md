@@ -42,3 +42,15 @@ Tom	Pitch between 40° and 90°
 Neutral	Pitch: -15° to 30°, Roll: -20° to 20°
 
 Each zone is selected based on the IMU's current orientation
+
+Build Instructions
+Compile
+
+qcc -Wall -o air_drummer main.c -lm -lsocket -lpthread
+
+./air_drummer
+This will initialize and calibrate both sensors, launch detection threads, and begin sending UDP packets to the configured IP and port.
+
+We used memento qnx ide
+
+
