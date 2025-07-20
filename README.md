@@ -1,1 +1,2 @@
-Beats by Air (Play on Beats by dre), we have gyro sensors.
+Beats by Air Final
+Using UDP now
