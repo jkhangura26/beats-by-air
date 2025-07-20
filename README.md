@@ -51,6 +51,15 @@ qcc -Wall -o air_drummer main.c -lm -lsocket -lpthread
 ./air_drummer
 This will initialize and calibrate both sensors, launch detection threads, and begin sending UDP packets to the configured IP and port.
 
-We used memento qnx ide
+ ### We used memento qnx ide
+
+Real-Time Threading
+Each stick runs in its own thread with SCHED_FIFO scheduling.
+
+Priorities are set to 90 (right) and 89 (left) for deterministic preemption order.
+
+Sampling interval is 2.5 ms, achieved using usleep() (can be improved with clock_nanosleep()).
+
+
 
 
