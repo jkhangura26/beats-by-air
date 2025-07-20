@@ -21,59 +21,60 @@
 #define UDP_PORT 8888
 
 // MPU6050 Constants
-#define MPU6050_ADDR1        0x68
-#define MPU6050_ADDR2        0x69
-#define WHO_AM_I             0x75
-#define PWR_MGMT_1           0x6B
-#define CONFIG               0x1A
-#define ACCEL_XOUT_H         0x3B
-#define GYRO_CONFIG          0x1B
-#define ACCEL_CONFIG         0x1C
-#define GYRO_XOUT_H          0x43
+#define MPU6050_ADDR1 0x68
+#define MPU6050_ADDR2 0x69
+#define WHO_AM_I 0x75
+#define PWR_MGMT_1 0x6B
+#define CONFIG 0x1A
+#define ACCEL_XOUT_H 0x3B
+#define GYRO_CONFIG 0x1B
+#define ACCEL_CONFIG 0x1C
+#define GYRO_XOUT_H 0x43
 
 #define I2C_SUCCESS 0
-#define I2C_ERROR   -1
+#define I2C_ERROR -1
 
 // OPTIMIZED: Better velocity thresholds for more varied response
-#define GESTURE_BUFFER_SIZE    6
-#define GESTURE_THRESHOLD      1.8f     // Lower threshold for softer hits
-#define DECELERATION_THRESHOLD -1.8f    // Less aggressive deceleration
-#define PEAK_DETECT_TIME_MS    45
-#define SAMPLE_RATE_US        1500
-#define MIN_HIT_INTERVAL      80000
-#define HIT_COOLDOWN_PERIOD   25000
+#define GESTURE_BUFFER_SIZE 6
+#define GESTURE_THRESHOLD 1.8f       // Lower threshold for softer hits
+#define DECELERATION_THRESHOLD -1.8f // Less aggressive deceleration
+#define PEAK_DETECT_TIME_MS 45
+#define SAMPLE_RATE_US 1500
+#define MIN_HIT_INTERVAL 80000
+#define HIT_COOLDOWN_PERIOD 25000
 
 // UPDATED: Square-like zone layout - each hand gets 2 zones
 // RIGHT HAND: Upper zones (SNARE top, TOM bottom)
-#define RIGHT_SNARE_PITCH_MIN    10.0f   // Upper zone
-#define RIGHT_SNARE_PITCH_MAX    90.0f
+#define RIGHT_SNARE_PITCH_MIN 10.0f // Upper zone
+#define RIGHT_SNARE_PITCH_MAX 90.0f
 
-#define RIGHT_TOM_PITCH_MIN      -90.0f  // Lower zone
-#define RIGHT_TOM_PITCH_MAX      10.0f
+#define RIGHT_TOM_PITCH_MIN -90.0f // Lower zone
+#define RIGHT_TOM_PITCH_MAX 10.0f
 
 // LEFT HAND: Side zones (HIHAT right, CRASH left)
-#define LEFT_HIHAT_ROLL_MIN      10.0f   // Right zone
-#define LEFT_HIHAT_ROLL_MAX      90.0f
+#define LEFT_HIHAT_ROLL_MIN 10.0f // Right zone
+#define LEFT_HIHAT_ROLL_MAX 90.0f
 
-#define LEFT_CRASH_ROLL_MIN      -90.0f  // Left zone
-#define LEFT_CRASH_ROLL_MAX      10.0f
+#define LEFT_CRASH_ROLL_MIN -90.0f // Left zone
+#define LEFT_CRASH_ROLL_MAX 10.0f
 
 // Neutral zone (center) - smaller for more precise control
-#define NEUTRAL_PITCH_MIN    -10.0f
-#define NEUTRAL_PITCH_MAX    10.0f
-#define NEUTRAL_ROLL_MIN     -10.0f
-#define NEUTRAL_ROLL_MAX     10.0f
+#define NEUTRAL_PITCH_MIN -10.0f
+#define NEUTRAL_PITCH_MAX 10.0f
+#define NEUTRAL_ROLL_MIN -10.0f
+#define NEUTRAL_ROLL_MAX 10.0f
 
-#define LEFT_DEFAULT_DRUM    DRUM_HIHAT
-#define RIGHT_DEFAULT_DRUM   DRUM_SNARE
+#define LEFT_DEFAULT_DRUM DRUM_HIHAT
+#define RIGHT_DEFAULT_DRUM DRUM_SNARE
 
 // UPDATED: More granular velocity thresholds
-#define VELOCITY_SOFT_MAX      2.5f    // Below this = soft
-#define VELOCITY_MEDIUM_MAX    4.0f    // Below this = medium
-#define VELOCITY_HARD_MAX      6.0f    // Below this = hard
+#define VELOCITY_SOFT_MAX 2.5f   // Below this = soft
+#define VELOCITY_MEDIUM_MAX 4.0f // Below this = medium
+#define VELOCITY_HARD_MAX 6.0f   // Below this = hard
 // Above VELOCITY_HARD_MAX = very_hard
 
-typedef enum {
+typedef enum
+{
     DRUM_SNARE = 0,
     DRUM_HIHAT = 1,
     DRUM_TOM = 2,
@@ -84,12 +85,14 @@ typedef enum {
     DRUM_NONE = -1
 } drum_type_t;
 
-typedef enum {
+typedef enum
+{
     HAND_LEFT = 0,
     HAND_RIGHT = 1
 } hand_type_t;
 
-typedef struct {
+typedef struct
+{
     float ax, ay, az;
     float gx, gy, gz;
     float total_accel;
@@ -98,7 +101,8 @@ typedef struct {
     uint64_t timestamp;
 } motion_sample_t;
 
-typedef struct {
+typedef struct
+{
     motion_sample_t samples[GESTURE_BUFFER_SIZE];
     int buffer_index;
     drum_type_t current_zone;
@@ -124,12 +128,14 @@ typedef struct {
 } drumstick_state_t;
 
 // I2C Message Structures
-struct i2c_recv_data_msg_t {
+struct i2c_recv_data_msg_t
+{
     i2c_sendrecv_t hdr;
     uint8_t bytes[0];
 };
 
-struct i2c_send_data_msg_t {
+struct i2c_send_data_msg_t
+{
     i2c_send_t hdr;
     uint8_t bytes[0];
 };
@@ -143,9 +149,9 @@ static struct i2c_recv_data_msg_t *read_msg_right = NULL;
 static struct i2c_send_data_msg_t *write_msg = NULL;
 
 // Function declarations
-const char* get_hand_emoji(hand_type_t hand);
-const char* get_drum_emoji(drum_type_t drum);
-drum_type_t get_drum_type_from_name(const char* name);
+const char *get_hand_emoji(hand_type_t hand);
+const char *get_drum_emoji(drum_type_t drum);
+drum_type_t get_drum_type_from_name(const char *name);
 int mpu6050_read_byte(uint8_t addr, uint8_t reg, uint8_t *val);
 void close_i2c_bus();
 int mpu6050_write_byte(uint8_t addr, uint8_t reg, uint8_t val);
@@ -155,15 +161,20 @@ void print_instructions();
 int process_stick_data(uint8_t addr, drumstick_state_t *state);
 
 // UPDATED: Improved velocity calculation
-const char* get_velocity_name(float intensity) {
-    if (intensity <= 0.3f) return "soft";
-    if (intensity <= 0.6f) return "medium";
-    if (intensity <= 0.85f) return "hard";
+const char *get_velocity_name(float intensity)
+{
+    if (intensity <= 0.3f)
+        return "soft";
+    if (intensity <= 0.6f)
+        return "medium";
+    if (intensity <= 0.85f)
+        return "hard";
     return "very_hard";
 }
 
 // Batch I2C read for both accel and gyro data
-int mpu6050_read_motion_data(uint8_t addr, int16_t *accel, int16_t *gyro) {
+int mpu6050_read_motion_data(uint8_t addr, int16_t *accel, int16_t *gyro)
+{
     struct i2c_recv_data_msg_t *msg = (addr == MPU6050_ADDR1) ? read_msg_left : read_msg_right;
 
     msg->bytes[0] = ACCEL_XOUT_H;
@@ -174,7 +185,8 @@ int mpu6050_read_motion_data(uint8_t addr, int16_t *accel, int16_t *gyro) {
     msg->hdr.stop = 1;
 
     int status, err = devctl(smbus_fd, DCMD_I2C_SENDRECV, msg, sizeof(*msg) + 14, &status);
-    if (err == EOK) {
+    if (err == EOK)
+    {
         accel[0] = (int16_t)((msg->bytes[0] << 8) | msg->bytes[1]);
         accel[1] = (int16_t)((msg->bytes[2] << 8) | msg->bytes[3]);
         accel[2] = (int16_t)((msg->bytes[4] << 8) | msg->bytes[5]);
@@ -188,50 +200,71 @@ int mpu6050_read_motion_data(uint8_t addr, int16_t *accel, int16_t *gyro) {
     return I2C_ERROR;
 }
 
-int init_i2c_buffers() {
+int init_i2c_buffers()
+{
     read_msg_left = malloc(sizeof(*read_msg_left) + 14);
     read_msg_right = malloc(sizeof(*read_msg_right) + 14);
     write_msg = malloc(sizeof(*write_msg) + 2);
 
-    if (!read_msg_left || !read_msg_right || !write_msg) {
+    if (!read_msg_left || !read_msg_right || !write_msg)
+    {
         return I2C_ERROR;
     }
     return I2C_SUCCESS;
 }
 
-void cleanup_i2c_buffers() {
-    if (read_msg_left) { free(read_msg_left); read_msg_left = NULL; }
-    if (read_msg_right) { free(read_msg_right); read_msg_right = NULL; }
-    if (write_msg) { free(write_msg); write_msg = NULL; }
+void cleanup_i2c_buffers()
+{
+    if (read_msg_left)
+    {
+        free(read_msg_left);
+        read_msg_left = NULL;
+    }
+    if (read_msg_right)
+    {
+        free(read_msg_right);
+        read_msg_right = NULL;
+    }
+    if (write_msg)
+    {
+        free(write_msg);
+        write_msg = NULL;
+    }
 }
 
-void* mpu_thread_func(void* arg) {
+void *mpu_thread_func(void *arg)
+{
     struct sched_param param;
-    param.sched_priority = (strcmp((const char*)arg, "Right") == 0) ? 21 : 20;
+    param.sched_priority = (strcmp((const char *)arg, "Right") == 0) ? 21 : 20;
     pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
 
-    if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0) {
+    if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0)
+    {
         printf("Warning: Could not lock memory\n");
     }
 
-    const char* label = (const char*)arg;
+    const char *label = (const char *)arg;
     uint8_t sensor_addr;
     hand_type_t hand;
     drumstick_state_t stick;
     bool space;
 
-    if (strcmp(label, "Right") == 0) {
+    if (strcmp(label, "Right") == 0)
+    {
         sensor_addr = MPU6050_ADDR2;
         hand = HAND_RIGHT;
         space = false;
-    } else {
+    }
+    else
+    {
         sensor_addr = MPU6050_ADDR1;
         hand = HAND_LEFT;
         space = true;
     }
 
     uint8_t id1 = 0;
-    if (mpu6050_read_byte(sensor_addr, WHO_AM_I, &id1) != I2C_SUCCESS || id1 != 0x68) {
+    if (mpu6050_read_byte(sensor_addr, WHO_AM_I, &id1) != I2C_SUCCESS || id1 != 0x68)
+    {
         printf("Sensor %X not detected. ID = 0x%02X\n", sensor_addr, id1);
         return NULL;
     }
@@ -248,16 +281,20 @@ void* mpu_thread_func(void* arg) {
     calibrate_drumstick(sensor_addr, &stick);
     printf("\n✅ Calibration complete!\n");
 
-    if (hand == HAND_LEFT) {
+    if (hand == HAND_LEFT)
+    {
         print_instructions();
         printf("🚀 Air Drumming active! Start playing!\n\n");
     }
 
-    while (1) {
+    while (1)
+    {
         int result = process_stick_data(sensor_addr, &stick);
-        if (result == 2) {
+        if (result == 2)
+        {
             printf("%s\n", stick.last_display);
-            if (space) printf("\n");
+            if (space)
+                printf("\n");
         }
 
         struct timespec sleep_time = {0, SAMPLE_RATE_US * 1000};
@@ -268,9 +305,11 @@ void* mpu_thread_func(void* arg) {
 }
 
 // UDP Functions
-int init_udp() {
+int init_udp()
+{
     udp_socket = socket(AF_INET, SOCK_DGRAM, 0);
-    if (udp_socket < 0) {
+    if (udp_socket < 0)
+    {
         perror("UDP socket creation failed");
         return -1;
     }
@@ -287,18 +326,21 @@ int init_udp() {
     return 0;
 }
 
-void send_drum_command(const char* drum_name, float intensity, hand_type_t hand) {
-    if (udp_socket < 0) return;
+void send_drum_command(const char *drum_name, float intensity, hand_type_t hand)
+{
+    if (udp_socket < 0)
+        return;
 
     char command[64];
-    const char* velocity = get_velocity_name(intensity);
+    const char *velocity = get_velocity_name(intensity);
 
     snprintf(command, sizeof(command), "%s:%s", drum_name, velocity);
 
     ssize_t sent = sendto(udp_socket, command, strlen(command), MSG_DONTWAIT,
-                         (struct sockaddr*)&mac_addr, sizeof(mac_addr));
+                          (struct sockaddr *)&mac_addr, sizeof(mac_addr));
 
-    if (sent > 0) {
+    if (sent > 0)
+    {
         printf("%s %s %s HIT! (Vol: %.0f%%, %s) -> UDP\n",
                get_hand_emoji(hand),
                get_drum_emoji(get_drum_type_from_name(drum_name)),
@@ -307,42 +349,54 @@ void send_drum_command(const char* drum_name, float intensity, hand_type_t hand)
     }
 }
 
-void close_udp() {
-    if (udp_socket >= 0) {
+void close_udp()
+{
+    if (udp_socket >= 0)
+    {
         close(udp_socket);
         udp_socket = -1;
     }
 }
 
-drum_type_t get_drum_type_from_name(const char* name) {
-    if (strcmp(name, "snare") == 0) return DRUM_SNARE;
-    if (strcmp(name, "hihat") == 0) return DRUM_HIHAT;
-    if (strcmp(name, "tom") == 0) return DRUM_TOM;
-    if (strcmp(name, "crash") == 0) return DRUM_CRASH;
+drum_type_t get_drum_type_from_name(const char *name)
+{
+    if (strcmp(name, "snare") == 0)
+        return DRUM_SNARE;
+    if (strcmp(name, "hihat") == 0)
+        return DRUM_HIHAT;
+    if (strcmp(name, "tom") == 0)
+        return DRUM_TOM;
+    if (strcmp(name, "crash") == 0)
+        return DRUM_CRASH;
     return DRUM_NONE;
 }
 
 // I2C Functions
-int open_i2c_bus(unsigned bus_number) {
+int open_i2c_bus(unsigned bus_number)
+{
     char device[20];
     snprintf(device, sizeof(device), "/dev/i2c%d", bus_number);
     smbus_fd = open(device, O_RDWR);
-    if (smbus_fd < 0) {
+    if (smbus_fd < 0)
+    {
         perror("I2C open failed");
         return I2C_ERROR;
     }
     return init_i2c_buffers();
 }
 
-void close_i2c_bus() {
-    if (smbus_fd != -1) {
+void close_i2c_bus()
+{
+    if (smbus_fd != -1)
+    {
         close(smbus_fd);
         smbus_fd = -1;
     }
     cleanup_i2c_buffers();
 }
 
-int mpu6050_write_byte(uint8_t addr, uint8_t reg, uint8_t val) {
+int mpu6050_write_byte(uint8_t addr, uint8_t reg, uint8_t val)
+{
     write_msg->bytes[0] = reg;
     write_msg->bytes[1] = val;
     write_msg->hdr.slave.addr = addr;
@@ -353,9 +407,11 @@ int mpu6050_write_byte(uint8_t addr, uint8_t reg, uint8_t val) {
     return (err == EOK) ? I2C_SUCCESS : I2C_ERROR;
 }
 
-int mpu6050_read_block(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len) {
+int mpu6050_read_block(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len)
+{
     struct i2c_recv_data_msg_t *msg = malloc(sizeof(*msg) + len);
-    if (!msg) return I2C_ERROR;
+    if (!msg)
+        return I2C_ERROR;
     msg->bytes[0] = reg;
     msg->hdr.slave.addr = addr;
     msg->hdr.slave.fmt = I2C_ADDRFMT_7BIT;
@@ -363,35 +419,42 @@ int mpu6050_read_block(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len) {
     msg->hdr.recv_len = len;
     msg->hdr.stop = 1;
     int status, err = devctl(smbus_fd, DCMD_I2C_SENDRECV, msg, sizeof(*msg) + len, &status);
-    if (err == EOK) {
+    if (err == EOK)
+    {
         memcpy(buf, msg->bytes, len);
         free(msg);
         return I2C_SUCCESS;
-    } else {
+    }
+    else
+    {
         free(msg);
         return I2C_ERROR;
     }
 }
 
-int mpu6050_read_byte(uint8_t addr, uint8_t reg, uint8_t *val) {
+int mpu6050_read_byte(uint8_t addr, uint8_t reg, uint8_t *val)
+{
     return mpu6050_read_block(addr, reg, val, 1);
 }
 
-short to_int16(uint8_t hi, uint8_t lo) {
+short to_int16(uint8_t hi, uint8_t lo)
+{
     return (short)((hi << 8) | lo);
 }
 
-uint64_t get_time_us() {
+uint64_t get_time_us()
+{
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return ts.tv_sec * 1000000LL + ts.tv_nsec / 1000;
 }
 
-void calculate_orientation(float ax, float ay, float az, float *pitch, float *roll) {
+void calculate_orientation(float ax, float ay, float az, float *pitch, float *roll)
+{
     static float last_pitch = 0, last_roll = 0;
     const float filter_alpha = 0.8f;
 
-    float raw_pitch = atan2f(-ax, sqrtf(ay*ay + az*az)) * 180.0f / M_PI;
+    float raw_pitch = atan2f(-ax, sqrtf(ay * ay + az * az)) * 180.0f / M_PI;
     float raw_roll = atan2f(ay, az) * 180.0f / M_PI;
 
     *pitch = filter_alpha * raw_pitch + (1.0f - filter_alpha) * last_pitch;
@@ -405,38 +468,52 @@ void calculate_orientation(float ax, float ay, float az, float *pitch, float *ro
 }
 
 // UPDATED: Square-layout drum zone detection
-drum_type_t get_drum_zone(float pitch, float roll, hand_type_t hand) {
+drum_type_t get_drum_zone(float pitch, float roll, hand_type_t hand)
+{
     static drum_type_t last_zone[2] = {DRUM_NEUTRAL, DRUM_NEUTRAL};
     const float hysteresis = 5.0f;
 
     drum_type_t current_zone = DRUM_NEUTRAL;
 
-    if (hand == HAND_RIGHT) {
+    if (hand == HAND_RIGHT)
+    {
         // RIGHT HAND: Vertical zones (pitch-based)
-        if (pitch >= (RIGHT_SNARE_PITCH_MIN - hysteresis)) {
-            current_zone = DRUM_SNARE;  // Upper zone
-        } else if (pitch <= (RIGHT_TOM_PITCH_MAX + hysteresis)) {
-            current_zone = DRUM_TOM;    // Lower zone
+        if (pitch >= (RIGHT_SNARE_PITCH_MIN - hysteresis))
+        {
+            current_zone = DRUM_SNARE; // Upper zone
         }
-    } else {
+        else if (pitch <= (RIGHT_TOM_PITCH_MAX + hysteresis))
+        {
+            current_zone = DRUM_TOM; // Lower zone
+        }
+    }
+    else
+    {
         // LEFT HAND: Horizontal zones (roll-based)
-        if (roll >= (LEFT_HIHAT_ROLL_MIN - hysteresis)) {
-            current_zone = DRUM_HIHAT;  // Right zone
-        } else if (roll <= (LEFT_CRASH_ROLL_MAX + hysteresis)) {
-            current_zone = DRUM_CRASH;  // Left zone
+        if (roll >= (LEFT_HIHAT_ROLL_MIN - hysteresis))
+        {
+            current_zone = DRUM_HIHAT; // Right zone
+        }
+        else if (roll <= (LEFT_CRASH_ROLL_MAX + hysteresis))
+        {
+            current_zone = DRUM_CRASH; // Left zone
         }
     }
 
     // Check neutral zone for both hands
     if (pitch >= NEUTRAL_PITCH_MIN && pitch <= NEUTRAL_PITCH_MAX &&
-        roll >= NEUTRAL_ROLL_MIN && roll <= NEUTRAL_ROLL_MAX) {
+        roll >= NEUTRAL_ROLL_MIN && roll <= NEUTRAL_ROLL_MAX)
+    {
         current_zone = DRUM_NEUTRAL;
     }
 
     // Apply hysteresis to prevent zone flipping
-    if (current_zone != last_zone[hand] && current_zone != DRUM_NEUTRAL) {
+    if (current_zone != last_zone[hand] && current_zone != DRUM_NEUTRAL)
+    {
         last_zone[hand] = current_zone;
-    } else if (current_zone == DRUM_NEUTRAL) {
+    }
+    else if (current_zone == DRUM_NEUTRAL)
+    {
         // Allow immediate neutral zone detection
         last_zone[hand] = current_zone;
     }
@@ -444,44 +521,68 @@ drum_type_t get_drum_zone(float pitch, float roll, hand_type_t hand) {
     return last_zone[hand];
 }
 
-const char* get_drum_name(drum_type_t drum) {
-    switch (drum) {
-        case DRUM_SNARE: return "snare";
-        case DRUM_HIHAT: return "hihat";
-        case DRUM_TOM: return "tom";
-        case DRUM_CRASH: return "crash";
-        case DRUM_KICK: return "kick";
-        case DRUM_RIDE: return "ride";
-        case DRUM_NEUTRAL: return "neutral";
-        default: return "unknown";
+const char *get_drum_name(drum_type_t drum)
+{
+    switch (drum)
+    {
+    case DRUM_SNARE:
+        return "snare";
+    case DRUM_HIHAT:
+        return "hihat";
+    case DRUM_TOM:
+        return "tom";
+    case DRUM_CRASH:
+        return "crash";
+    case DRUM_KICK:
+        return "kick";
+    case DRUM_RIDE:
+        return "ride";
+    case DRUM_NEUTRAL:
+        return "neutral";
+    default:
+        return "unknown";
     }
 }
 
-const char* get_drum_emoji(drum_type_t drum) {
-    switch (drum) {
-        case DRUM_SNARE: return "🥁";
-        case DRUM_HIHAT: return "🔔";
-        case DRUM_TOM: return "🪘";
-        case DRUM_CRASH: return "💥";
-        case DRUM_KICK: return "👣";
-        case DRUM_RIDE: return "🔆";
-        case DRUM_NEUTRAL: return "👆";
-        default: return "❓";
+const char *get_drum_emoji(drum_type_t drum)
+{
+    switch (drum)
+    {
+    case DRUM_SNARE:
+        return "🥁";
+    case DRUM_HIHAT:
+        return "🔔";
+    case DRUM_TOM:
+        return "🪘";
+    case DRUM_CRASH:
+        return "💥";
+    case DRUM_KICK:
+        return "👣";
+    case DRUM_RIDE:
+        return "🔆";
+    case DRUM_NEUTRAL:
+        return "👆";
+    default:
+        return "❓";
     }
 }
 
-const char* get_hand_emoji(hand_type_t hand) {
+const char *get_hand_emoji(hand_type_t hand)
+{
     return hand == HAND_LEFT ? "👈" : "👉";
 }
 
-void play_drum_sound(drum_type_t drum, float intensity, hand_type_t hand) {
-    if (drum == DRUM_NEUTRAL || drum == DRUM_NONE) return;
-    const char* drum_name = get_drum_name(drum);
+void play_drum_sound(drum_type_t drum, float intensity, hand_type_t hand)
+{
+    if (drum == DRUM_NEUTRAL || drum == DRUM_NONE)
+        return;
+    const char *drum_name = get_drum_name(drum);
     send_drum_command(drum_name, intensity, hand);
 }
 
 void add_sample_to_buffer(drumstick_state_t *state, float ax, float ay, float az,
-                          float gx, float gy, float gz, float pitch, float roll) {
+                          float gx, float gy, float gz, float pitch, float roll)
+{
     motion_sample_t *sample = &state->samples[state->buffer_index];
 
     state->accel_smooth[0] = state->alpha * ax + (1.0f - state->alpha) * state->accel_smooth[0];
@@ -499,8 +600,8 @@ void add_sample_to_buffer(drumstick_state_t *state, float ax, float ay, float az
     sample->gy = state->gyro_smooth[1];
     sample->gz = state->gyro_smooth[2];
 
-    sample->total_accel = sqrtf(ax*ax + ay*ay + az*az);
-    sample->total_gyro = sqrtf(gx*gx + gy*gy + gz*gz);
+    sample->total_accel = sqrtf(ax * ax + ay * ay + az * az);
+    sample->total_gyro = sqrtf(gx * gx + gy * gy + gz * gz);
     sample->pitch = pitch;
     sample->roll = roll;
     sample->timestamp = get_time_us();
@@ -508,31 +609,38 @@ void add_sample_to_buffer(drumstick_state_t *state, float ax, float ay, float az
     state->buffer_index = (state->buffer_index + 1) % GESTURE_BUFFER_SIZE;
 }
 
-motion_sample_t* get_sample(drumstick_state_t *state, int offset) {
+motion_sample_t *get_sample(drumstick_state_t *state, int offset)
+{
     int index = (state->buffer_index - 1 - offset + GESTURE_BUFFER_SIZE) % GESTURE_BUFFER_SIZE;
     return &state->samples[index];
 }
 
 // UPDATED: Better velocity range distribution
-int detect_hit_gesture(drumstick_state_t *state) {
+int detect_hit_gesture(drumstick_state_t *state)
+{
     uint64_t current_time = get_time_us();
-    if ((current_time - state->last_hit_time) <= MIN_HIT_INTERVAL) {
+    if ((current_time - state->last_hit_time) <= MIN_HIT_INTERVAL)
+    {
         return 0;
     }
 
     motion_sample_t *current = get_sample(state, 0);
-    if (current->timestamp == 0) return 0;
+    if (current->timestamp == 0)
+        return 0;
 
-    if (!state->detecting_hit) {
+    if (!state->detecting_hit)
+    {
         motion_sample_t *prev1 = get_sample(state, 1);
         motion_sample_t *prev2 = get_sample(state, 2);
-        if (prev1->timestamp == 0 || prev2->timestamp == 0) return 0;
+        if (prev1->timestamp == 0 || prev2->timestamp == 0)
+            return 0;
 
         float accel_delta = current->total_accel - prev2->total_accel;
         float gyro_delta = current->total_gyro - prev2->total_gyro;
-        float combined_motion = sqrtf(accel_delta*accel_delta + gyro_delta*gyro_delta);
+        float combined_motion = sqrtf(accel_delta * accel_delta + gyro_delta * gyro_delta);
 
-        if (combined_motion > 2.0f && current->total_accel > 1.3f) {  // Lower threshold
+        if (combined_motion > 2.0f && current->total_accel > 1.3f)
+        { // Lower threshold
             state->detecting_hit = 1;
             state->hit_start_time = current_time;
             state->max_accel_during_hit = current->total_accel;
@@ -543,36 +651,48 @@ int detect_hit_gesture(drumstick_state_t *state) {
         return 0;
     }
 
-    if (state->detecting_hit) {
-        if (current->total_accel > state->max_accel_during_hit) {
+    if (state->detecting_hit)
+    {
+        if (current->total_accel > state->max_accel_during_hit)
+        {
             state->max_accel_during_hit = current->total_accel;
         }
-        if (current->total_accel < state->min_accel_during_hit) {
+        if (current->total_accel < state->min_accel_during_hit)
+        {
             state->min_accel_during_hit = current->total_accel;
         }
 
         motion_sample_t *prev1 = get_sample(state, 1);
-        if (prev1->timestamp == 0) return 0;
+        if (prev1->timestamp == 0)
+            return 0;
 
         float accel_change = current->total_accel - prev1->total_accel;
         float velocity_change = current->total_gyro - prev1->total_gyro;
 
         if (accel_change < DECELERATION_THRESHOLD ||
             (state->max_accel_during_hit - current->total_accel) > 1.0f ||
-            velocity_change < -12.0f) {
+            velocity_change < -12.0f)
+        {
 
             // UPDATED: More balanced intensity calculation for better velocity distribution
             float raw_intensity = state->max_accel_during_hit;
             float normalized_intensity;
 
             // Map acceleration ranges to velocity levels more evenly
-            if (raw_intensity <= VELOCITY_SOFT_MAX) {
+            if (raw_intensity <= VELOCITY_SOFT_MAX)
+            {
                 normalized_intensity = 0.2f + (raw_intensity / VELOCITY_SOFT_MAX) * 0.15f; // 0.2-0.35
-            } else if (raw_intensity <= VELOCITY_MEDIUM_MAX) {
+            }
+            else if (raw_intensity <= VELOCITY_MEDIUM_MAX)
+            {
                 normalized_intensity = 0.35f + ((raw_intensity - VELOCITY_SOFT_MAX) / (VELOCITY_MEDIUM_MAX - VELOCITY_SOFT_MAX)) * 0.25f; // 0.35-0.6
-            } else if (raw_intensity <= VELOCITY_HARD_MAX) {
+            }
+            else if (raw_intensity <= VELOCITY_HARD_MAX)
+            {
                 normalized_intensity = 0.6f + ((raw_intensity - VELOCITY_MEDIUM_MAX) / (VELOCITY_HARD_MAX - VELOCITY_MEDIUM_MAX)) * 0.25f; // 0.6-0.85
-            } else {
+            }
+            else
+            {
                 normalized_intensity = 0.85f + fminf(0.15f, (raw_intensity - VELOCITY_HARD_MAX) / 3.0f); // 0.85-1.0
             }
 
@@ -584,7 +704,8 @@ int detect_hit_gesture(drumstick_state_t *state) {
             return 1;
         }
 
-        if ((current_time - state->hit_start_time) > PEAK_DETECT_TIME_MS * 1000) {
+        if ((current_time - state->hit_start_time) > PEAK_DETECT_TIME_MS * 1000)
+        {
             state->detecting_hit = 0;
             return 0;
         }
@@ -592,15 +713,18 @@ int detect_hit_gesture(drumstick_state_t *state) {
     return 0;
 }
 
-void calibrate_drumstick(uint8_t addr, drumstick_state_t *state) {
+void calibrate_drumstick(uint8_t addr, drumstick_state_t *state)
+{
     float sum_ax = 0, sum_ay = 0, sum_az = 0;
     float sum_gx = 0, sum_gy = 0, sum_gz = 0;
     const int samples = 40;
 
     int16_t accel[3], gyro[3];
 
-    for (int i = 0; i < samples; i++) {
-        if (mpu6050_read_motion_data(addr, accel, gyro) == I2C_SUCCESS) {
+    for (int i = 0; i < samples; i++)
+    {
+        if (mpu6050_read_motion_data(addr, accel, gyro) == I2C_SUCCESS)
+        {
             sum_ax += accel[0];
             sum_ay += accel[1];
             sum_az += accel[2];
@@ -609,7 +733,8 @@ void calibrate_drumstick(uint8_t addr, drumstick_state_t *state) {
             sum_gz += gyro[2];
         }
         usleep(5000);
-        if (i % 8 == 0) {
+        if (i % 8 == 0)
+        {
             printf(".");
             fflush(stdout);
         }
@@ -624,7 +749,8 @@ void calibrate_drumstick(uint8_t addr, drumstick_state_t *state) {
 }
 
 // UPDATED: New zone layout instructions
-void print_instructions() {
+void print_instructions()
+{
     printf("\n🥁🥁 SQUARE LAYOUT AIR DRUMMING 🥁🥁\n");
     printf("===================================\n");
     printf("RIGHT HAND %s (Vertical):     LEFT HAND %s (Horizontal):\n",
@@ -645,7 +771,8 @@ void print_instructions() {
     printf("===================================\n\n");
 }
 
-void init_drumstick_state(drumstick_state_t *state, hand_type_t hand) {
+void init_drumstick_state(drumstick_state_t *state, hand_type_t hand)
+{
     memset(state, 0, sizeof(drumstick_state_t));
     state->current_zone = DRUM_NEUTRAL;
     state->hand = hand;
@@ -657,9 +784,11 @@ void init_drumstick_state(drumstick_state_t *state, hand_type_t hand) {
     state->consecutive_hits = 0;
 }
 
-int process_stick_data(uint8_t addr, drumstick_state_t *state) {
+int process_stick_data(uint8_t addr, drumstick_state_t *state)
+{
     int16_t accel[3], gyro[3];
-    if (mpu6050_read_motion_data(addr, accel, gyro) != I2C_SUCCESS) {
+    if (mpu6050_read_motion_data(addr, accel, gyro) != I2C_SUCCESS)
+    {
         return 0;
     }
 
@@ -675,26 +804,30 @@ int process_stick_data(uint8_t addr, drumstick_state_t *state) {
     add_sample_to_buffer(state, ax, ay, az, gx, gy, gz, pitch, roll);
 
     drum_type_t zone = get_drum_zone(pitch, roll, state->hand);
-    if (zone != DRUM_NONE && zone != DRUM_NEUTRAL) {
+    if (zone != DRUM_NONE && zone != DRUM_NEUTRAL)
+    {
         state->current_zone = zone;
     }
 
-    if (detect_hit_gesture(state)) {
+    if (detect_hit_gesture(state))
+    {
         play_drum_sound(state->current_zone, state->hit_intensity, state->hand);
         return 1;
     }
 
     uint64_t current_time = get_time_us();
-    if ((current_time - state->last_display_time) >= 250000) {
+    if ((current_time - state->last_display_time) >= 250000)
+    {
         motion_sample_t *sample = get_sample(state, 0);
-        if (sample->timestamp > 0) {
+        if (sample->timestamp > 0)
+        {
             snprintf(state->last_display, sizeof(state->last_display),
-                    "%s %s %s | P:%.1f° R:%.1f° | A:%.2f G:%.1f",
-                    get_hand_emoji(state->hand),
-                    state->detecting_hit ? "⚡" : "✓",
-                    get_drum_name(state->current_zone),
-                    sample->pitch, sample->roll,
-                    sample->total_accel, sample->total_gyro);
+                     "%s %s %s | P:%.1f° R:%.1f° | A:%.2f G:%.1f",
+                     get_hand_emoji(state->hand),
+                     state->detecting_hit ? "⚡" : "✓",
+                     get_drum_name(state->current_zone),
+                     sample->pitch, sample->roll,
+                     sample->total_accel, sample->total_gyro);
             state->last_display_time = current_time;
             return 2;
         }
@@ -702,7 +835,8 @@ int process_stick_data(uint8_t addr, drumstick_state_t *state) {
     return 0;
 }
 
-int main() {
+int main()
+{
     pthread_t right, left;
 
     printf("🥁 SQUARE LAYOUT DUAL STICK AIR DRUMMER 🥁\n");
@@ -711,25 +845,29 @@ int main() {
     printf("User: KeerathS\n");
     printf("Layout: Square zones, better velocity distribution\n\n");
 
-    if (init_udp() != 0) {
+    if (init_udp() != 0)
+    {
         printf("❌ Failed to initialize UDP\n");
         return 1;
     }
 
-    if (open_i2c_bus(1) != I2C_SUCCESS) {
+    if (open_i2c_bus(1) != I2C_SUCCESS)
+    {
         printf("❌ Failed to open I2C bus\n");
         close_udp();
         return 1;
     }
 
-    if (pthread_create(&right, NULL, mpu_thread_func, "Right") != 0) {
+    if (pthread_create(&right, NULL, mpu_thread_func, "Right") != 0)
+    {
         printf("❌ Failed to create right thread\n");
         close_i2c_bus();
         close_udp();
         return 1;
     }
 
-    if (pthread_create(&left, NULL, mpu_thread_func, "Left") != 0) {
+    if (pthread_create(&left, NULL, mpu_thread_func, "Left") != 0)
+    {
         printf("❌ Failed to create left thread\n");
         pthread_cancel(right);
         close_i2c_bus();

@@ -1,54 +1,71 @@
-# Makefile for Air Drums Project on QNX
+ARTIFACT = air_drummer
 
-# Compiler and flags
-CC = qcc
-CFLAGS = -Vgcc_ntoarmv7le -Wall -O2 -g
-LDFLAGS = -Vgcc_ntoarmv7le -lm -lpthread -lasound
+#Build architecture/variant string, possible values: x86, armv7le, etc...
+PLATFORM ?= aarch64le
 
-# Target and sources
-TARGET = air_drums
-SOURCES = air_drums.c
-OBJECTS = $(SOURCES:.c=.o)
+#Build profile, possible values: release, debug, profile, coverage
+BUILD_PROFILE ?= debug
 
-# Default target
+CONFIG_NAME ?= $(PLATFORM)-$(BUILD_PROFILE)
+OUTPUT_DIR = build/$(CONFIG_NAME)
+TARGET = $(OUTPUT_DIR)/$(ARTIFACT)
+
+#Compiler definitions
+
+CC = qcc -Vgcc_nto$(PLATFORM)
+CXX = q++ -Vgcc_nto$(PLATFORM)_cxx
+LD = $(CC)
+
+#User defined include/preprocessor flags and libraries
+
+#INCLUDES += -I/path/to/my/lib/include
+#INCLUDES += -I../mylib/public
+
+# Combined libraries from both makefiles
+LIBS = -lsocket -lm
+
+#Compiler flags for build profiles
+CCFLAGS_release += -O2
+CCFLAGS_debug += -g -O0 -fno-builtin
+CCFLAGS_coverage += -g -O0 -ftest-coverage -fprofile-arcs
+LDFLAGS_coverage += -ftest-coverage -fprofile-arcs
+CCFLAGS_profile += -g -O0 -finstrument-functions
+LIBS_profile += -lprofilingS
+
+#Generic compiler flags (which include build type flags)
+CCFLAGS_all += -Wall -fmessage-length=0
+CCFLAGS_all += $(CCFLAGS_$(BUILD_PROFILE))
+#Shared library has to be compiled with -fPIC
+#CCFLAGS_all += -fPIC
+LDFLAGS_all += $(LDFLAGS_$(BUILD_PROFILE))
+LIBS_all += $(LIBS_$(BUILD_PROFILE))
+DEPS = -Wp,-MMD,$(@:%.o=%.d),-MT,$@
+
+#Macro to expand files recursively: parameters $1 -  directory, $2 - extension, i.e. cpp
+rwildcard = $(wildcard $(addprefix $1/*.,$2)) $(foreach d,$(wildcard $1/*),$(call rwildcard,$d,$2))
+
+#Source list
+SRCS = $(call rwildcard, src, c)
+
+#Object files list
+OBJS = $(addprefix $(OUTPUT_DIR)/,$(addsuffix .o, $(basename $(SRCS))))
+
+#Compiling rule
+$(OUTPUT_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) -c $(DEPS) -o $@ $(INCLUDES) $(CCFLAGS_all) $(CCFLAGS) $<
+
+#Linking rule
+$(TARGET):$(OBJS)
+	$(LD) -o $(TARGET) $(LDFLAGS_all) $(LDFLAGS) $(OBJS) $(LIBS_all) $(LIBS)
+
+#Rules section for default compilation and linking
 all: $(TARGET)
 
-# Build the main executable
-$(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(TARGET) $(LDFLAGS)
-
-# Compile source files
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-# Install target (copy to appropriate location)
-install: $(TARGET)
-	cp $(TARGET) /usr/local/bin/
-	chmod 755 /usr/local/bin/$(TARGET)
-
-# Clean build artifacts
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -fr $(OUTPUT_DIR)
 
-# Create necessary directories and set permissions
-setup:
-	mkdir -p /var/log/air_drums
-	mkdir -p /etc/air_drums
-	chmod 755 /var/log/air_drums
-	chmod 755 /etc/air_drums
+rebuild: clean all
 
-# Debug build
-debug: CFLAGS += -DDEBUG -g3
-debug: $(TARGET)
-
-# Help target
-help:
-	@echo "Available targets:"
-	@echo "  all     - Build the air drums application"
-	@echo "  install - Install the application to /usr/local/bin"
-	@echo "  clean   - Remove build artifacts"
-	@echo "  setup   - Create necessary directories"
-	@echo "  debug   - Build with debug symbols"
-	@echo "  help    - Show this help message"
-
-.PHONY: all clean install setup debug help
+#Inclusion of dependencies (object files to source and includes)
+-include $(OBJS:%.o=%.d)
