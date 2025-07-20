@@ -1,1 +1,1 @@
-Beats by Air (Play on Beats by dre) with qnx
+Beats by Air (Play on Beats by dre) with QNX
