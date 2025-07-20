@@ -1,4 +1,4 @@
-ARTIFACT = air_drummer
+ARTIFACT = air_drummer_udp
 
 #Build architecture/variant string, possible values: x86, armv7le, etc...
 PLATFORM ?= aarch64le
