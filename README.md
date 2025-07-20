@@ -14,3 +14,31 @@ A real-time, multithreaded embedded C application that uses two MPU6050 motion s
 - Real-time thread scheduling with `SCHED_FIFO` and fixed priorities
 - Hit intensity estimation based on acceleration profiles
 - Fully embedded-safe: no dynamic memory allocation in performance-critical paths
+
+---
+
+## Requirements
+
+- QNX Neutrino RTOS (e.g., 7.x)
+- MPU6050 sensors (2 units: left and right stick)
+- I2C bus access (`/dev/i2c1`)
+- UDP-compatible host (Mac or PC) listening on the specified IP and port
+- Network connection between QNX system and host
+
+---
+
+## Configuration
+
+The following constants can be adjusted in `main.c`:
+
+#define MPU6050_ADDR1 0x68  // Left stick
+#define MPU6050_ADDR2 0x69  // Right stick
+Drum Zones (Orientation-Based)
+Zone	Condition (Pitch / Roll)
+Snare	Pitch between -90° and -10°
+Hihat	Roll between 30° and 90°
+Crash	Roll between -90° and -30°
+Tom	Pitch between 40° and 90°
+Neutral	Pitch: -15° to 30°, Roll: -20° to 20°
+
+Each zone is selected based on the IMU's current orientation
