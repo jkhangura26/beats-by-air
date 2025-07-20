@@ -1,1 +1,1 @@
-Beats by Air (Play on Beats by dre) with QNX
+Beats by Air (Play on Beats by dre), we have gyro sensors
